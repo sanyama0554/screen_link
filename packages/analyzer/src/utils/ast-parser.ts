@@ -13,7 +13,7 @@ export class ASTParser {
   private defaultOptions: ASTParserOptions = {
     typescript: true,
     jsx: true,
-    decorators: false
+    decorators: true
   };
 
   parseFile(file: ParsedFile, options?: ASTParserOptions): ParsedFile {
@@ -29,11 +29,7 @@ export class ASTParser {
         }]);
         if (opts.jsx) plugins.push('jsx');
         if (opts.decorators) {
-          plugins.push(['decorators', { 
-            decoratorsBeforeExport: true,
-            allowCallParenthesized: true 
-          }]);
-          plugins.push('decoratorAutoAccessors');
+          plugins.push(['decorators', { legacy: true }]);
         }
         
         try {
@@ -47,52 +43,9 @@ export class ASTParser {
           });
           
           return { ...file, ast };
-        } catch (decoratorError) {
-          // Fallback 1: Try legacy decorator syntax
-          try {
-            const legacyPlugins = plugins.filter(p => {
-              if (typeof p === 'string') return p !== 'decoratorAutoAccessors';
-              if (Array.isArray(p)) return p[0] !== 'decorators';
-              return true;
-            });
-            legacyPlugins.push(['decorators', { legacy: true }]);
-            
-            const ast = babelParse(file.content, {
-              sourceType: 'module',
-              allowImportExportEverywhere: true,
-              allowAwaitOutsideFunction: true,
-              allowReturnOutsideFunction: true,
-              allowSuperOutsideMethod: true,
-              plugins: legacyPlugins
-            });
-            
-            console.warn(`Parse with modern decorators failed for ${file.path}, using legacy`);
-            return { ...file, ast };
-          } catch (legacyError) {
-            // Fallback 2: Try without decorators entirely
-            try {
-              const noDecoratorPlugins = plugins.filter(p => {
-                if (typeof p === 'string') return p !== 'decoratorAutoAccessors';
-                if (Array.isArray(p)) return p[0] !== 'decorators';
-                return true;
-              });
-              
-              const ast = babelParse(file.content, {
-                sourceType: 'module',
-                allowImportExportEverywhere: true,
-                allowAwaitOutsideFunction: true,
-                allowReturnOutsideFunction: true,
-                allowSuperOutsideMethod: true,
-                plugins: noDecoratorPlugins
-              });
-              
-              console.warn(`Parse with decorators failed for ${file.path}, using no decorators`);
-              return { ...file, ast };
-            } catch (finalError) {
-              console.warn(`Failed to parse ${file.path}:`, decoratorError instanceof Error ? decoratorError.message : decoratorError);
-              return file;
-            }
-          }
+        } catch (error) {
+          console.warn(`Failed to parse ${file.path}:`, error instanceof Error ? error.message : error);
+          return file;
         }
       }
     } catch (error) {
