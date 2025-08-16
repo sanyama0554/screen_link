@@ -23,13 +23,20 @@ export class ASTParser {
       if (file.type === 'typescript' || file.type === 'javascript') {
         const plugins: any[] = [];
         
-        if (opts.typescript) plugins.push('typescript');
+        if (opts.typescript) plugins.push(['typescript', { dts: false }]);
         if (opts.jsx) plugins.push('jsx');
-        if (opts.decorators) plugins.push(['decorators', { decoratorsBeforeExport: true }]);
+        if (opts.decorators) plugins.push(['decorators', { 
+          decoratorsBeforeExport: true,
+          allowCallParenthesized: true 
+        }]);
         
         try {
           const ast = babelParse(file.content, {
             sourceType: 'module',
+            allowImportExportEverywhere: true,
+            allowAwaitOutsideFunction: true,
+            allowReturnOutsideFunction: true,
+            allowSuperOutsideMethod: true,
             plugins
           });
           
