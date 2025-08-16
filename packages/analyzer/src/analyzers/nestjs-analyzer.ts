@@ -17,11 +17,18 @@ export class NestJSAnalyzer {
   analyzeResolvers(files: ParsedFile[]): ResolverInfo[] {
     const resolvers: ResolverInfo[] = [];
     
-    const tsFiles = files.filter(f => f.type === 'typescript' && f.ast);
+    const tsFiles = files.filter(f => f.type === 'typescript');
     
     for (const file of tsFiles) {
-      const fileResolvers = this.analyzeResolverFile(file);
-      resolvers.push(...fileResolvers);
+      // Try AST-based analysis first
+      if (file.ast) {
+        const astResolvers = this.analyzeResolverFile(file);
+        resolvers.push(...astResolvers);
+      } else {
+        // Fallback to regex-based analysis
+        const regexResolvers = this.analyzeResolverFileWithRegex(file);
+        resolvers.push(...regexResolvers);
+      }
     }
     
     return resolvers;
@@ -292,5 +299,47 @@ export class NestJSAnalyzer {
     
     // Fallback
     return this.toPascalCase(name) + 'Service';
+  }
+
+  /**
+   * Regex-based fallback analysis when AST parsing fails
+   */
+  private analyzeResolverFileWithRegex(file: ParsedFile): ResolverInfo[] {
+    const resolvers: ResolverInfo[] = [];
+    const content = file.content;
+    
+    // Find class declarations with @Resolver decorator
+    const resolverClassRegex = /@Resolver\s*\(\s*[^)]*\s*\)\s*(?:export\s+)?class\s+(\w+)/g;
+    let resolverMatch;
+    
+    while ((resolverMatch = resolverClassRegex.exec(content)) !== null) {
+      const className = resolverMatch[1];
+      
+      // Find methods with @Query, @Mutation, @ResolveField decorators
+      const methodRegex = new RegExp(
+        `@(Query|Mutation|ResolveField)\\s*\\([^)]*\\)\\s*(?:async\\s+)?(\\w+)\\s*\\(`,
+        'g'
+      );
+      
+      let methodMatch;
+      while ((methodMatch = methodRegex.exec(content)) !== null) {
+        const decoratorType = methodMatch[1].toLowerCase() as 'query' | 'mutation' | 'resolveField';
+        const methodName = methodMatch[2];
+        
+        const resolverId = `resolver:${className}.${methodName}`;
+        
+        resolvers.push({
+          id: resolverId,
+          className,
+          methodName,
+          type: decoratorType === 'resolveField' ? 'field' : decoratorType,
+          graphqlName: methodName, // Use method name as GraphQL name
+          dependencies: [], // Simple regex can't extract dependencies reliably
+          file: file.path
+        });
+      }
+    }
+    
+    return resolvers;
   }
 }

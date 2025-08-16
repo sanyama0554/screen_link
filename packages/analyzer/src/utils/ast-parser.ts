@@ -13,7 +13,7 @@ export class ASTParser {
   private defaultOptions: ASTParserOptions = {
     typescript: true,
     jsx: true,
-    decorators: true
+    decorators: false
   };
 
   parseFile(file: ParsedFile, options?: ASTParserOptions): ParsedFile {
