@@ -25,14 +25,32 @@ export class ASTParser {
         
         if (opts.typescript) plugins.push('typescript');
         if (opts.jsx) plugins.push('jsx');
-        if (opts.decorators) plugins.push(['decorators', { decoratorsBeforeExport: true }]);
+        if (opts.decorators) plugins.push(['decorators', { decoratorsBeforeExport: false }]);
         
-        const ast = babelParse(file.content, {
-          sourceType: 'module',
-          plugins
-        });
-        
-        return { ...file, ast };
+        try {
+          const ast = babelParse(file.content, {
+            sourceType: 'module',
+            plugins
+          });
+          
+          return { ...file, ast };
+        } catch (decoratorError) {
+          // Fallback: try without decorators
+          const fallbackPlugins = plugins.filter(p => !Array.isArray(p) || p[0] !== 'decorators');
+          
+          try {
+            const ast = babelParse(file.content, {
+              sourceType: 'module',
+              plugins: fallbackPlugins
+            });
+            
+            console.warn(`Parse with decorators failed for ${file.path}, using fallback`);
+            return { ...file, ast };
+          } catch (fallbackError) {
+            console.warn(`Failed to parse ${file.path}:`, decoratorError instanceof Error ? decoratorError.message : decoratorError);
+            return file;
+          }
+        }
       }
     } catch (error) {
       console.warn(`Failed to parse ${file.path}:`, error);
