@@ -1,0 +1,64 @@
+{
+  "rootDir": ".",
+  "apps": {
+    "web": {
+      "type": "nextjs",
+      "path": "apps/web",
+      "namespace": "web"
+    },
+    "admin": {
+      "type": "nextjs", 
+      "path": "apps/admin",
+      "namespace": "admin"
+    }
+  },
+  "packages": {
+    "bff": {
+      "type": "nestjs",
+      "path": "apps/bff"
+    },
+    "backend": {
+      "type": "nestjs",
+      "path": "apps/backend"
+    }
+  },
+  "protos": {
+    "path": "packages/protos"
+  },
+  "analysis": {
+    "includePatterns": [
+      "**/*.ts",
+      "**/*.tsx",
+      "**/*.js",
+      "**/*.jsx",
+      "**/*.graphql",
+      "**/*.proto"
+    ],
+    "excludePatterns": [
+      "**/node_modules/**",
+      "**/dist/**",
+      "**/.next/**",
+      "**/coverage/**"
+    ],
+    "graphql": {
+      "tagNames": ["gql", "graphql"],
+      "includeDocumentNodes": true
+    },
+    "nestjs": {
+      "decorators": {
+        "resolver": ["Resolver"],
+        "query": ["Query"],
+        "mutation": ["Mutation"],
+        "resolveField": ["ResolveField"]
+      }
+    },
+    "grpc": {
+      "clientModulePattern": "ClientsModule.register"
+    }
+  },
+  "output": {
+    "anonymize": false,
+    "includeWarnings": true,
+    "defaultLayers": ["screen", "graphql", "resolver", "grpc"]
+  }
+}

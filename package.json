@@ -1,0 +1,31 @@
+{
+  "name": "screen-link",
+  "version": "1.0.0",
+  "description": "Dependency visualization tool for monorepo (Next.js Frontend / NestJS BFF(GraphQL) / NestJS Backend(gRPC))",
+  "author": "yuma_yamasaki",
+  "license": "MIT",
+  "private": true,
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "scripts": {
+    "build": "turbo run build",
+    "dev": "turbo run dev",
+    "lint": "turbo run lint",
+    "typecheck": "turbo run typecheck",
+    "test": "turbo run test",
+    "clean": "turbo run clean"
+  },
+  "devDependencies": {
+    "turbo": "^1.10.0",
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0",
+    "eslint": "^8.0.0",
+    "prettier": "^3.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
+  }
+}
