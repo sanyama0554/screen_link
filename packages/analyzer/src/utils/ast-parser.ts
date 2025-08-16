@@ -23,12 +23,18 @@ export class ASTParser {
       if (file.type === 'typescript' || file.type === 'javascript') {
         const plugins: any[] = [];
         
-        if (opts.typescript) plugins.push(['typescript', { dts: false }]);
-        if (opts.jsx) plugins.push('jsx');
-        if (opts.decorators) plugins.push(['decorators', { 
-          decoratorsBeforeExport: true,
-          allowCallParenthesized: true 
+        if (opts.typescript) plugins.push(['typescript', { 
+          dts: false,
+          disallowAmbiguousJSXLike: false
         }]);
+        if (opts.jsx) plugins.push('jsx');
+        if (opts.decorators) {
+          plugins.push(['decorators', { 
+            decoratorsBeforeExport: true,
+            allowCallParenthesized: true 
+          }]);
+          plugins.push('decoratorAutoAccessors');
+        }
         
         try {
           const ast = babelParse(file.content, {
@@ -42,20 +48,50 @@ export class ASTParser {
           
           return { ...file, ast };
         } catch (decoratorError) {
-          // Fallback: try without decorators
-          const fallbackPlugins = plugins.filter(p => !Array.isArray(p) || p[0] !== 'decorators');
-          
+          // Fallback 1: Try legacy decorator syntax
           try {
+            const legacyPlugins = plugins.filter(p => {
+              if (typeof p === 'string') return p !== 'decoratorAutoAccessors';
+              if (Array.isArray(p)) return p[0] !== 'decorators';
+              return true;
+            });
+            legacyPlugins.push(['decorators', { legacy: true }]);
+            
             const ast = babelParse(file.content, {
               sourceType: 'module',
-              plugins: fallbackPlugins
+              allowImportExportEverywhere: true,
+              allowAwaitOutsideFunction: true,
+              allowReturnOutsideFunction: true,
+              allowSuperOutsideMethod: true,
+              plugins: legacyPlugins
             });
             
-            console.warn(`Parse with decorators failed for ${file.path}, using fallback`);
+            console.warn(`Parse with modern decorators failed for ${file.path}, using legacy`);
             return { ...file, ast };
-          } catch (fallbackError) {
-            console.warn(`Failed to parse ${file.path}:`, decoratorError instanceof Error ? decoratorError.message : decoratorError);
-            return file;
+          } catch (legacyError) {
+            // Fallback 2: Try without decorators entirely
+            try {
+              const noDecoratorPlugins = plugins.filter(p => {
+                if (typeof p === 'string') return p !== 'decoratorAutoAccessors';
+                if (Array.isArray(p)) return p[0] !== 'decorators';
+                return true;
+              });
+              
+              const ast = babelParse(file.content, {
+                sourceType: 'module',
+                allowImportExportEverywhere: true,
+                allowAwaitOutsideFunction: true,
+                allowReturnOutsideFunction: true,
+                allowSuperOutsideMethod: true,
+                plugins: noDecoratorPlugins
+              });
+              
+              console.warn(`Parse with decorators failed for ${file.path}, using no decorators`);
+              return { ...file, ast };
+            } catch (finalError) {
+              console.warn(`Failed to parse ${file.path}:`, decoratorError instanceof Error ? decoratorError.message : decoratorError);
+              return file;
+            }
           }
         }
       }
