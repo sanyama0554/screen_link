@@ -1,6 +1,6 @@
 import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
-import { ScreenLinkConfig, defaultConfig } from './types';
+import { ScreenLinkConfig, defaultConfig } from './types.js';
 
 export function loadConfig(configPath?: string): ScreenLinkConfig {
   // Try to find config file

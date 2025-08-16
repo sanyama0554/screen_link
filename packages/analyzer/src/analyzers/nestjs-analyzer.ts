@@ -132,13 +132,13 @@ export class NestJSAnalyzer {
     
     // Traverse method body to find service calls
     traverse(method as any, {
-      MemberExpression: (path) => {
+      MemberExpression: (methodPath) => {
         // Look for this.someService.someMethod() patterns
-        if (t.isThisExpression(path.node.object) && t.isIdentifier(path.node.property)) {
-          const serviceName = path.node.property.name;
+        if (t.isThisExpression(methodPath.node.object) && t.isIdentifier(methodPath.node.property)) {
+          const serviceName = methodPath.node.property.name;
           
           // Check if this is followed by a method call
-          const parent = path.parent;
+          const parent = methodPath.parent;
           if (t.isMemberExpression(parent) && t.isIdentifier(parent.property)) {
             const methodName = parent.property.name;
             
@@ -151,23 +151,23 @@ export class NestJSAnalyzer {
         }
         
         // Look for getService() calls for gRPC clients
-        if (t.isMemberExpression(path.node) && 
-            t.isCallExpression(path.node.object) &&
-            t.isMemberExpression(path.node.object.callee) &&
-            t.isThisExpression(path.node.object.callee.object) &&
-            t.isIdentifier(path.node.object.callee.property) &&
-            path.node.object.callee.property.name === 'getService') {
+        if (t.isMemberExpression(methodPath.node) && 
+            t.isCallExpression(methodPath.node.object) &&
+            t.isMemberExpression(methodPath.node.object.callee) &&
+            t.isThisExpression(methodPath.node.object.callee.object) &&
+            t.isIdentifier(methodPath.node.object.callee.property) &&
+            methodPath.node.object.callee.property.name === 'getService') {
           
           // this.client.getService('ServiceName').methodName
-          const serviceArg = path.node.object.arguments[0];
-          if (t.isStringLiteral(serviceArg) && t.isIdentifier(path.node.property)) {
+          const serviceArg = methodPath.node.object.arguments[0];
+          if (t.isStringLiteral(serviceArg) && t.isIdentifier(methodPath.node.property)) {
             const serviceName = serviceArg.value;
-            const methodName = path.node.property.name;
+            const methodName = methodPath.node.property.name;
             dependencies.push(`grpc:${serviceName}.${this.toPascalCase(methodName)}`);
           }
         }
       }
-    }, path.scope);
+    });
     
     return dependencies;
   }

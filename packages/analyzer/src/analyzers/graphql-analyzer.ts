@@ -89,7 +89,7 @@ export class GraphQLAnalyzer {
             
             // First argument should be the GraphQL document
             const firstArg = path.node.arguments[0];
-            if (firstArg) {
+            if (firstArg && t.isExpression(firstArg)) {
               const info = this.analyzeHookUsage(firstArg, funcName, file);
               if (info) {
                 results.push(info);
@@ -216,7 +216,7 @@ export class GraphQLAnalyzer {
               (funcName.startsWith('use') && funcName.includes('Mutation'))) {
             
             const firstArg = path.node.arguments[0];
-            if (firstArg) {
+            if (firstArg && t.isExpression(firstArg)) {
               const info = this.analyzeHookUsage(firstArg, funcName, file);
               if (info) {
                 dependencies.push(info.id);

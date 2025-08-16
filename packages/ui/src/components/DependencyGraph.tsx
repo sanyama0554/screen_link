@@ -1,5 +1,5 @@
 import React, { useMemo, useCallback, useState } from 'react';
-import { Canvas, Node as ReaflowNode, Edge as ReaflowEdge, CanvasPosition, CanvasDirection } from 'reaflow';
+import { Canvas, Node as ReaflowNode, Edge as ReaflowEdge } from 'reaflow';
 import { DependencyMap, ViewConfig, Theme } from '../types';
 import { NodeComponent } from './NodeComponent';
 import { EdgeComponent } from './EdgeComponent';
@@ -153,7 +153,7 @@ export const DependencyGraph: React.FC<DependencyGraphProps> = ({
       <Canvas
         nodes={nodes}
         edges={edges}
-        direction={CanvasDirection.RIGHT}
+        direction="RIGHT"
         node={renderNode}
         edge={renderEdge}
         onNodeClick={handleNodeClick}
@@ -163,8 +163,6 @@ export const DependencyGraph: React.FC<DependencyGraphProps> = ({
         minZoom={0.1}
         animated={true}
         readonly={false}
-        pannable={true}
-        zoomable={true}
       />
       
       {/* Node count indicator */}

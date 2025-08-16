@@ -45,7 +45,7 @@ export class GrpcAnalyzer {
 
   private extractPackageName(content: string): string | null {
     // Extract package declaration
-    const packageMatch = content.match(/^\\s*package\\s+([\\w\\.]+)\\s*;/m);
+    const packageMatch = content.match(/^\s*package\s+([\w\.]+)\s*;/m);
     return packageMatch ? packageMatch[1] : null;
   }
 
@@ -56,7 +56,7 @@ export class GrpcAnalyzer {
     const cleanContent = this.removeComments(content);
     
     // Extract service blocks
-    const serviceRegex = /service\\s+(\\w+)\\s*\\{([^}]*)\\}/g;
+    const serviceRegex = /service\s+(\w+)\s*\{([^}]*)\}/g;
     let serviceMatch;
     
     while ((serviceMatch = serviceRegex.exec(cleanContent)) !== null) {
@@ -78,7 +78,7 @@ export class GrpcAnalyzer {
     const rpcs: Array<{ name: string; input: string; output: string }> = [];
     
     // Extract RPC declarations
-    const rpcRegex = /rpc\\s+(\\w+)\\s*\\(\\s*([^)]+)\\s*\\)\\s*returns\\s*\\(\\s*([^)]+)\\s*\\)/g;
+    const rpcRegex = /rpc\s+(\w+)\s*\(\s*([^)]+)\s*\)\s*returns\s*\(\s*([^)]+)\s*\)/g;
     let rpcMatch;
     
     while ((rpcMatch = rpcRegex.exec(serviceBody)) !== null) {
@@ -99,17 +99,17 @@ export class GrpcAnalyzer {
   private cleanTypeName(typeName: string): string {
     // Remove stream keywords and clean up type names
     return typeName
-      .replace(/^stream\\s+/i, '')
-      .replace(/\\s+/g, ' ')
+      .replace(/^stream\s+/i, '')
+      .replace(/\s+/g, ' ')
       .trim();
   }
 
   private removeComments(content: string): string {
     // Remove single-line comments
-    let result = content.replace(/\\/\\/.*$/gm, '');
+    let result = content.replace(/\/\/.*$/gm, '');
     
-    // Remove multi-line comments
-    result = result.replace(/\\/\\*[\\s\\S]*?\\*\\//g, '');
+    // Remove multi-line comments  
+    result = result.replace(/\/\*[\s\S]*?\*\//g, '');
     
     return result;
   }
@@ -159,7 +159,7 @@ export class GrpcAnalyzer {
 
       // Package declaration
       if (line.startsWith('package ')) {
-        const match = line.match(/package\\s+([\\w\\.]+);/);
+        const match = line.match(/package\s+([\w\.]+);/);
         if (match) {
           (result as any).package = match[1];
         }
@@ -168,7 +168,7 @@ export class GrpcAnalyzer {
 
       // Service declaration
       if (line.startsWith('service ')) {
-        const match = line.match(/service\\s+(\\w+)\\s*\\{?/);
+        const match = line.match(/service\s+(\w+)\s*\{?/);
         if (match) {
           currentService = {
             name: match[1],
@@ -182,7 +182,7 @@ export class GrpcAnalyzer {
 
       // Message declaration
       if (line.startsWith('message ')) {
-        const match = line.match(/message\\s+(\\w+)\\s*\\{?/);
+        const match = line.match(/message\s+(\w+)\s*\{?/);
         if (match) {
           currentMessage = {
             name: match[1],
@@ -196,7 +196,7 @@ export class GrpcAnalyzer {
 
       // RPC declaration
       if (currentContext === 'service' && line.startsWith('rpc ')) {
-        const match = line.match(/rpc\\s+(\\w+)\\s*\\(([^)]+)\\)\\s*returns\\s*\\(([^)]+)\\)/);
+        const match = line.match(/rpc\s+(\w+)\s*\(([^)]+)\)\s*returns\s*\(([^)]+)\)/);
         if (match && currentService) {
           currentService.methods.push({
             name: match[1],
@@ -210,7 +210,7 @@ export class GrpcAnalyzer {
       // Field declaration in message
       if (currentContext === 'message' && currentMessage) {
         // Simple field parsing: type name = number;
-        const fieldMatch = line.match(/(repeated\\s+)?(optional\\s+)?(\\w+)\\s+(\\w+)\\s*=\\s*(\\d+);/);
+        const fieldMatch = line.match(/(repeated\s+)?(optional\s+)?(\w+)\s+(\w+)\s*=\s*(\d+);/);
         if (fieldMatch) {
           currentMessage.fields.push({
             repeated: !!fieldMatch[1],

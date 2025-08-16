@@ -2,10 +2,10 @@
 
 import { Command } from 'commander';
 import chalk from 'chalk';
-import { analyzeCommand } from './commands/analyze';
-import { viewCommand } from './commands/view';
-import { impactCommand } from './commands/impact';
-import { diffCommand } from './commands/diff';
+import { analyzeCommand } from './commands/analyze.js';
+import { viewCommand } from './commands/view.js';
+import { impactCommand } from './commands/impact.js';
+import { diffCommand } from './commands/diff.js';
 
 const program = new Command();
 

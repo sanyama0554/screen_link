@@ -3,7 +3,7 @@ import ora from 'ora';
 import { readFileSync, writeFileSync } from 'fs';
 import { join } from 'path';
 import { AnalysisEngine } from '@screen-link/analyzer';
-import { loadConfig, validateConfig } from '../config';
+import { loadConfig, validateConfig } from '../config/index.js';
 
 interface AnalyzeOptions {
   config: string;
@@ -52,7 +52,7 @@ export async function analyzeCommand(options: AnalyzeOptions) {
     console.log(`  Resolvers: ${result.nodes.filter(n => n.type === 'resolver').length}`);
     console.log(`  gRPC Services: ${result.nodes.filter(n => n.type === 'grpc').length}`);
     
-    if (result.meta?.warnings?.length > 0) {
+    if (result.meta?.warnings && result.meta.warnings.length > 0) {
       console.log(chalk.yellow(`\nWarnings: ${result.meta.warnings.length}`));
       if (options.verbose) {
         result.meta.warnings.forEach((warning: string) => {

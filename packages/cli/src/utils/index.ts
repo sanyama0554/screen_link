@@ -1,2 +1,2 @@
-export * from './logger';
-export * from './error';
+export * from './logger.js';
+export * from './error.js';

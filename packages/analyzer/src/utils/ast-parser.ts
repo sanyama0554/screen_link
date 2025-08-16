@@ -111,7 +111,8 @@ export class ASTParser {
         
         path.node.specifiers?.forEach(spec => {
           if (t.isExportSpecifier(spec)) {
-            exports.push({ name: spec.exported.name || spec.local.name });
+            const exportedName = t.isIdentifier(spec.exported) ? spec.exported.name : spec.local.name;
+            exports.push({ name: exportedName });
           }
         });
       }

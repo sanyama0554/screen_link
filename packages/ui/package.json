@@ -4,7 +4,7 @@
   "description": "React components for dependency visualization",
   "main": "dist/index.js",
   "scripts": {
-    "build": "tsc && vite build",
+    "build": "vite build",
     "dev": "vite",
     "typecheck": "tsc --noEmit",
     "lint": "eslint src/**/*.{ts,tsx}",

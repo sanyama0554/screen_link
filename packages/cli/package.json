@@ -2,12 +2,13 @@
   "name": "@screen-link/cli",
   "version": "1.0.0",
   "description": "CLI tool for dependency analysis",
+  "type": "module",
   "main": "dist/index.js",
   "bin": {
     "screen-link": "dist/cli.js"
   },
   "scripts": {
-    "build": "tsc",
+    "build": "tsc --build",
     "dev": "tsx watch src/cli.ts",
     "typecheck": "tsc --noEmit",
     "lint": "eslint src/**/*.ts",
